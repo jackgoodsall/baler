@@ -224,7 +224,7 @@ def train(model, variables, train_data, test_data, project_path, config):
                 train_data, dtype=torch.float32, device=device
             ).view(train_data.shape[0], 1, train_data.shape[1], train_data.shape[2])
             valid_ds = torch.tensor(test_data, dtype=torch.float32, device=device).view(
-                train_data.shape[0], 1, train_data.shape[1], train_data.shape[2]
+                test_data.shape[0], 1, test_data.shape[1], test_data.shape[2]
             )
     elif config.data_dimension == 1:
         train_ds = torch.tensor(train_data, dtype=torch.float64, device=device)
