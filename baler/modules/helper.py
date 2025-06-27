@@ -293,9 +293,10 @@ def process(
     Returns: ndarray, ndarray, ndarray: Array with the train set, array with the test set and array with the
     normalization features.
     """
+  
     loaded = np.load(input_path)
     data = loaded["data"]
-
+    print()
     if verbose:
         print("Original Dataset Shape - ", data.shape)
 

@@ -404,7 +404,7 @@ def plot_2D(project_path, config):
     #     )
 
     print("=== Plotting ===")
-    for ind in trange(num_tiles):
+    for ind in trange(10):
         # if config.model_type == "convolutional":
         #     tile_data_decompressed = data_decompressed[ind][0]
         # elif config.model_type == "dense":

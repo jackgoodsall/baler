@@ -259,41 +259,41 @@ class AE_Dropout_BN(nn.Module):
 
         # encoder
         self.enc_nn = nn.Sequential(
-            nn.Linear(n_features, 200, dtype=torch.float64),
+            nn.Linear(n_features, 200),
             nn.Dropout(p=0.5),
             nn.LeakyReLU(),
-            # nn.BatchNorm1d(200,dtype=torch.float64),
-            nn.Linear(200, 100, dtype=torch.float64),
+            nn.BatchNorm1d(200),
+            nn.Linear(200, 100),
             nn.Dropout(p=0.4),
             nn.LeakyReLU(),
-            # nn.BatchNorm1d(100,dtype=torch.float64),
-            nn.Linear(100, 50, dtype=torch.float64),
+            nn.BatchNorm1d(100),
+            nn.Linear(100, 50),
             nn.Dropout(p=0.3),
             nn.LeakyReLU(),
-            # nn.BatchNorm1d(50,dtype=torch.float64),
-            nn.Linear(50, z_dim, dtype=torch.float64),
+            nn.BatchNorm1d(50),
+            nn.Linear(50, z_dim),
             nn.Dropout(p=0.2),
             nn.LeakyReLU(),
-            # nn.BatchNorm1d(z_dim,dtype=torch.float64)
+            nn.BatchNorm1d(z_dim)
         )
 
         # decoder
         self.dec_nn = nn.Sequential(
-            nn.Linear(z_dim, 50, dtype=torch.float64),
-            # nn.Dropout(p=0.2),
+            nn.Linear(z_dim, 50),
+            nn.Dropout(p=0.2),
             nn.LeakyReLU(),
-            nn.BatchNorm1d(50, dtype=torch.float64),
-            nn.Linear(50, 100, dtype=torch.float64),
-            # nn.Dropout(p=0.3),
+            nn.BatchNorm1d(50),
+            nn.Linear(50, 100),
+            nn.Dropout(p=0.3),
             nn.LeakyReLU(),
-            nn.BatchNorm1d(100, dtype=torch.float64),
-            nn.Linear(100, 200, dtype=torch.float64),
-            # nn.Dropout(p=0.4),
+            nn.BatchNorm1d(100),
+            nn.Linear(100, 200),
+            nn.Dropout(p=0.4),
             nn.LeakyReLU(),
-            nn.BatchNorm1d(200, dtype=torch.float64),
-            nn.Linear(200, n_features, dtype=torch.float64),
-            # nn.Dropout(p=0.5),
-            nn.BatchNorm1d(n_features, dtype=torch.float64),
+            nn.BatchNorm1d(200),
+            nn.Linear(200, n_features),
+            nn.Dropout(p=0.5),
+            nn.BatchNorm1d(n_features),
             nn.ReLU(),
         )
 
@@ -313,12 +313,51 @@ class AE_Dropout_BN(nn.Module):
         return self.decode(z)
 
 
+class AE_MNIST(nn.Module):
+
+    def __init__(self, n_features, z_dim, *args, **kwargs):
+        super(AE_MNIST, self).__init__(*args, **kwargs)
+
+        self.encoder = nn.Sequential(
+            nn.Linear(28 * 28, 512),
+            nn.ReLU(),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 64),
+            nn.ReLU(),
+            nn.Linear(64, z_dim),
+            nn.ReLU(),
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(z_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, 256),
+            nn.ReLU(),
+            nn.Linear(256, 512),
+            nn.ReLU(),
+            nn.Linear(512, 28*28),
+
+        )
+    def encode(self, x):
+        out = self.encoder(x)
+        return out
+
+    def decode(self, z):
+        out = self.decoder(z)
+        return out
+
+    def forward(self, x):
+        z = self.encode(x)
+        return self.decode(z)
+
+
+
 class Conv_AE(nn.Module):
     def __init__(self, n_features, z_dim, *args, **kwargs):
         super(Conv_AE, self).__init__(*args, **kwargs)
 
         self.q_z_mid_dim = 2000
-        self.q_z_output_dim = 128
+        self.q_z_output_dim = 72128
         self.conv_op_shape = None
 
         # Encoder

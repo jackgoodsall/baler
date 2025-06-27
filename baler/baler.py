@@ -130,7 +130,7 @@ def perform_training(output_path, config, verbose: bool):
                 number_of_rows = original_shape[1]
                 number_of_columns = original_shape[2]
                 n_features = number_of_columns
-            config.latent_space_size = ceil(
+            config.latent_space_size = config.latent_space_size if config.latent_space_size else ceil(
                 (number_of_rows * number_of_columns) / config.compression_ratio
             )
             config.number_of_columns = number_of_columns
