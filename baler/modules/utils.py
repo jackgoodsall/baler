@@ -195,6 +195,7 @@ def mse_sum_loss_l1(model_children, true_data, reconstructed_data, reg_param, va
     mse_sum = nn.MSELoss(reduction="sum")
     mse_loss = mse_sum(reconstructed_data, true_data)
     number_of_columns = true_data.shape[1]
+    
 
     mse_sum_loss = mse_loss / number_of_columns
 
@@ -202,7 +203,7 @@ def mse_sum_loss_l1(model_children, true_data, reconstructed_data, reg_param, va
     values = true_data
     if not validate:
         for i in range(len(model_children)):
-            values = functional.relu(model_children[i](values))
+            values = functional.leaky_relu(model_children[i](values))
             l1_loss += torch.mean(torch.abs(values))
 
         loss = mse_sum_loss + reg_param * l1_loss

@@ -228,8 +228,6 @@ def train(model, variables, train_data, test_data, project_path, config):
     elif config.data_dimension == 1:
         train_ds = torch.tensor(train_data, dtype=torch.float64, device=device)
         valid_ds = torch.tensor(test_data, dtype=torch.float64, device=device)
-    print(train_ds.shape)
-    
     # Pushing input data into the torch-DataLoader object and combines into one DataLoader object (a basic wrapper
     # around several DataLoader objects).
 
