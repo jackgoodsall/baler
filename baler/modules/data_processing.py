@@ -21,7 +21,6 @@ from sklearn.model_selection import train_test_split
 
 from ..modules import helper
 from ..modules import models
-from ..modules import normalisations
 
 
 def convert_to_blocks_util(blocks, data):
@@ -131,7 +130,7 @@ def find_minmax(data):
     return normalization_features
 
 
-def normalize(data, custom_norm: bool, custom_norm_function: str = ""):
+def normalize(data, custom_norm: bool):
     """This function scales the data to be in the range [0,1], based on the Min Max normalization method. It finds
     the minimum and maximum values of each column and computes the values according to: x_norm = (x - x_min) / (x_max
     - x_min).
@@ -144,11 +143,14 @@ def normalize(data, custom_norm: bool, custom_norm_function: str = ""):
     """
     data = np.array(data)
     if custom_norm:
-        if hasattr(normalisations, custom_norm_function):
-            norm_func = getattr(normalisations, custom_norm_function)
-            return norm_func(data)
-        return data
-    return normalisations.min_max_norm(data)
+        pass
+    elif not custom_norm:
+        true_min = np.min(data)
+        true_max = np.max(data)
+        feature_range = true_max - true_min
+        data = [((i - true_min) / feature_range) for i in data]
+        data = np.array(data)
+    return data
 
 
 def split(data, test_size: float, random_state: int) -> Tuple[ndarray, ndarray]:
@@ -167,7 +169,7 @@ def split(data, test_size: float, random_state: int) -> Tuple[ndarray, ndarray]:
 
 
 def renormalize_std(
-    input_data: ndarray, true_min: float, feature_range: float, custom_norm: bool = False
+    input_data: ndarray, true_min: float, feature_range: float
 ) -> ndarray:
     """Computes the un-normalization of normalized arrays. This function is used in combination with
     `renormalize_func` to perform this operation on an entire dataset.
@@ -180,11 +182,10 @@ def renormalize_std(
     Returns:
         ndarray: Un-normalized data array
     """
-    if not custom_norm:
-        return np.array([((i * feature_range) + true_min) for i in list(input_data)])
+    return np.array([((i * feature_range) + true_min) for i in list(input_data)])
 
 
-def renormalize_func(norm_data: ndarray, min_list: List, range_list: List, custom_norm: bool = False) -> ndarray:
+def renormalize_func(norm_data: ndarray, min_list: List, range_list: List) -> ndarray:
     """Un-normalizes an entire dataset. Applies the `renormalize_std`function across an entire dataset.
         `min_list` and `range_list` are obtained from the `normalization_features.npy` file.
 
@@ -196,9 +197,7 @@ def renormalize_func(norm_data: ndarray, min_list: List, range_list: List, custo
     Returns:
         ndarray: Array with the un-normalized values.
     """
-
     norm_data = np.array(norm_data)
     min_list = np.array(min_list)
     range_list = np.array(range_list)
-    if not custom_norm:
-        return norm_data * range_list + min_list
+    return norm_data * range_list + min_list

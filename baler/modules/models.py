@@ -253,12 +253,72 @@ class CFD_dense_AE(nn.Module):
             hook.remove()
 
 
+class AE_Dropout_BN(nn.Module):
+    def __init__(self, n_features, z_dim, *args, **kwargs):
+        super(AE_Dropout_BN, self).__init__(*args, **kwargs)
+
+        # encoder
+        self.enc_nn = nn.Sequential(
+            nn.Linear(n_features, 200, dtype=torch.float64),
+            nn.Dropout(p=0.5),
+            nn.LeakyReLU(),
+            # nn.BatchNorm1d(200,dtype=torch.float64),
+            nn.Linear(200, 100, dtype=torch.float64),
+            nn.Dropout(p=0.4),
+            nn.LeakyReLU(),
+            # nn.BatchNorm1d(100,dtype=torch.float64),
+            nn.Linear(100, 50, dtype=torch.float64),
+            nn.Dropout(p=0.3),
+            nn.LeakyReLU(),
+            # nn.BatchNorm1d(50,dtype=torch.float64),
+            nn.Linear(50, z_dim, dtype=torch.float64),
+            nn.Dropout(p=0.2),
+            nn.LeakyReLU(),
+            # nn.BatchNorm1d(z_dim,dtype=torch.float64)
+        )
+
+        # decoder
+        self.dec_nn = nn.Sequential(
+            nn.Linear(z_dim, 50, dtype=torch.float64),
+            # nn.Dropout(p=0.2),
+            nn.LeakyReLU(),
+            nn.BatchNorm1d(50, dtype=torch.float64),
+            nn.Linear(50, 100, dtype=torch.float64),
+            # nn.Dropout(p=0.3),
+            nn.LeakyReLU(),
+            nn.BatchNorm1d(100, dtype=torch.float64),
+            nn.Linear(100, 200, dtype=torch.float64),
+            # nn.Dropout(p=0.4),
+            nn.LeakyReLU(),
+            nn.BatchNorm1d(200, dtype=torch.float64),
+            nn.Linear(200, n_features, dtype=torch.float64),
+            # nn.Dropout(p=0.5),
+            nn.BatchNorm1d(n_features, dtype=torch.float64),
+            nn.ReLU(),
+        )
+
+        self.n_features = n_features
+        self.z_dim = z_dim
+
+    def encode(self, x):
+        out = self.enc_nn(x)
+        return out
+
+    def decode(self, z):
+        out = self.dec_nn(z)
+        return out
+
+    def forward(self, x):
+        z = self.encode(x)
+        return self.decode(z)
+
+
 class Conv_AE(nn.Module):
     def __init__(self, n_features, z_dim, *args, **kwargs):
         super(Conv_AE, self).__init__(*args, **kwargs)
 
         self.q_z_mid_dim = 2000
-        self.q_z_output_dim = 72128
+        self.q_z_output_dim = 128
         self.conv_op_shape = None
 
         # Encoder
