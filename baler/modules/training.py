@@ -85,7 +85,7 @@ def fit(
                 true_data=inputs,
                 reconstructed_data=reconstructions,
                 reg_param=regular_param,
-                validate=True,
+                validate=False,
             )
 
         # Compute the loss-gradient with
