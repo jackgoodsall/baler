@@ -5,14 +5,18 @@ notebooks/*
 !workspaces/CFD_workspace/CFD_project_animation/config/CFD_project_animation_config.py
 !notebooks/HyyAnalysis.ipynb
 
-
+# Data/Random folders 
+/baler-enviro/
+/HEPMCArea/DATA/*
+/HEPMCArea/processedData/*
+/eos/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
+
 *.so
 
 # Distribution / packaging

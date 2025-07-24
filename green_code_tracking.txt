@@ -1,0 +1,11 @@
+2025-07-21 16:18:29 - hepmc - Model Training - Total time taken: 311.561 seconds
+2025-07-21 16:31:53 - hepmc - Model Training - Total time taken: 225.060 seconds
+2025-07-21 16:49:15 - hepmc - Model Training - Total time taken: 230.714 seconds
+2025-07-21 16:56:07 - hepmc - Model Training - Total time taken: 229.762 seconds
+2025-07-21 17:01:28 - hepmc - Compression Comparison - Total time taken: 2.466 seconds
+2025-07-21 17:15:13 - hepmc - Model Training - Total time taken: 392.925 seconds
+2025-07-21 17:25:42 - hepmc - Model Training - Total time taken: 385.267 seconds
+2025-07-21 17:55:06 - hepmc - Model Training - Total time taken: 381.961 seconds
+2025-07-22 10:49:51 - hepmc - Model Training - Total time taken: 335.320 seconds
+2025-07-22 11:03:14 - hepmc - Model Training - Total time taken: 332.043 seconds
+2025-07-22 13:08:30 - hepmc - Compression Comparison - Total time taken: 3.842 seconds
