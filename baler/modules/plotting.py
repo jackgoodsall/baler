@@ -98,7 +98,7 @@ def plot_box_and_whisker(names, residual, pdf):
     pdf.savefig()
 
 
-def plot_1D(output_path: str, config):
+def plot_1D(output_path: str, config, extra_path):
     """General plotting for 1D data, for example data from a '.csv' file. This function generates a pdf
         document where each page contains the before/after performance
         of each column of the 1D data
@@ -109,7 +109,12 @@ def plot_1D(output_path: str, config):
     """
 
     before_path = config.input_path
-    after_path = os.path.join(output_path, "decompressed_output", "decompressed.npz")
+    if extra_path == "decompressed_output":
+        after_path = os.path.join(output_path, extra_path, "decompressed.npz")
+        write_path = os.path.join(output_path, "plotting", "comparison.pdf")
+    else:
+        after_path = os.path.join(extra_path, "decompressed.npz")
+        write_path = os.path.join(extra_path, "comparison.pdf")
 
     before = np.transpose(np.load(before_path)["data"])
     after = np.transpose(np.load(after_path)["data"])
@@ -122,7 +127,7 @@ def plot_1D(output_path: str, config):
     response = np.divide(np.subtract(after, before), before) * 100
     residual = np.subtract(after, before)
 
-    with PdfPages(os.path.join(output_path, "plotting", "comparison.pdf")) as pdf:
+    with PdfPages(write_path) as pdf:
         plot_box_and_whisker(names, residual, pdf)
         fig = plt.figure(constrained_layout=True, figsize=(10, 4))
         subfigs = fig.subfigures(1, 2, wspace=0.07, width_ratios=[1, 1])
@@ -367,7 +372,7 @@ def plot_2D_old(project_path, config):
     #         writer.append_data(image)
 
 
-def plot_2D(project_path, config):
+def plot_2D(project_path, config, extra_path):
     import sys
 
     """General plotting for 2D data, for example 2D arraysfrom computational fluid
@@ -437,14 +442,120 @@ def plot_2D(project_path, config):
         # sys.exit()
 
 
-def plot(output_path, config):
+def plot(project_path, config, extra_path="decompressed_output"):
     """Runs the appropriate plotting function based on the data dimension 1D or 2D
 
     Args:
-        output_path (path): The path to the project directory
+        extra_path (path): The path to the project directory
         config (dataclass): The config class containing attributes set in the config file
     """
     if config.data_dimension == 1:
-        plot_1D(output_path, config)
+        plot_1D(project_path, config, extra_path)
     elif config.data_dimension == 2:
-        plot_2D(output_path, config)
+        plot_2D(project_path, config, extra_path)
+
+
+def plot_comparison_summary(results, output_path, original_size_mb):
+    """
+    Generates a single PDF page with summary plots comparing all benchmark results.
+
+    Args:
+        results (list[BenchmarkResult]): A list of BenchmarkResult data objects.
+        output_path (str): The main output directory for the project.
+        original_size_mb (float): The size of the original uncompressed file in MB.
+    """
+    print("=== Plotting Comparison Summary ===")
+
+    # Sort results by RMSE for consistent plotting order
+    sorted_results = sorted(results, key=lambda r: r.rmse)
+
+    # Extract data into lists for easy plotting
+    names = [r.name for r in sorted_results]
+    rmse_values = [r.rmse for r in sorted_results]
+    compress_times = [r.compress_time_sec for r in sorted_results]
+    decompress_times = [r.decompress_time_sec for r in sorted_results]
+
+    # Calculate compression ratios
+    ratios = [
+        original_size_mb / r.size_mb if r.size_mb > 0 else 0 for r in sorted_results
+    ]
+
+    # --- Create the plots ---
+    fig, axs = plt.subplots(2, 2, figsize=(18, 12))
+    fig.suptitle("Compression Benchmark Summary", fontsize=20, y=1.02)
+
+    # 1. RMSE (Error) Plot
+    ax1 = axs[0, 0]
+    ax1.bar(names, rmse_values, color="skyblue")
+    ax1.set_title("Reconstruction Error (RMSE)")
+    ax1.set_ylabel("RMSE (lower is better)")
+    ax1.set_yscale("log")
+    ax1.grid(axis="y", linestyle="--", alpha=0.7)
+
+    # 2. Performance (Time) Plot - Grouped Bar Chart
+    ax2 = axs[0, 1]
+    x = np.arange(len(names))  # the label locations
+    width = 0.35  # the width of the bars
+    ax2.bar(
+        x - width / 2, compress_times, width, label="Compression Time", color="coral"
+    )
+    ax2.bar(
+        x + width / 2,
+        decompress_times,
+        width,
+        label="Decompression Time",
+        color="lightgreen",
+    )
+    ax2.set_title("Performance")
+    ax2.set_ylabel("Time (s, lower is better)")
+    ax2.set_xticks(x, names)
+    ax2.legend()
+    ax2.grid(axis="y", linestyle="--", alpha=0.7)
+
+    # 3. Compression Ratio Plot
+    ax3 = axs[1, 0]
+    ax3.bar(names, ratios, color="mediumpurple")
+    ax3.set_title("Compression Ratio")
+    ax3.set_ylabel("Ratio (Original / Compressed, higher is better)")
+    ax3.axhline(
+        y=1, color="gray", linestyle="--", linewidth=1
+    )  # Line for no compression
+    ax3.grid(axis="y", linestyle="--", alpha=0.7)
+
+    # 4. Trade-off Plot (Ratio vs. Error)
+    ax4 = axs[1, 1]
+    ax4.scatter(ratios, rmse_values, color="crimson", zorder=5)
+    for i, name in enumerate(names):
+        ax4.text(ratios[i] * 1.02, rmse_values[i], name, fontsize=9)
+    ax4.set_title("Trade-off: Compression Ratio vs. Error")
+    ax4.set_xlabel("Compression Ratio (higher is better)")
+    ax4.set_ylabel("RMSE (lower is better)")
+    ax4.set_yscale("log")
+    ax4.set_xscale("log")  # Log scale for ratio can also be useful
+    ax4.grid(True, which="both", ls="--", alpha=0.6)
+    # Highlight the "Pareto frontier" or ideal corner
+    ax4.annotate(
+        "Ideal Region",
+        xy=(0.95, 0.05),
+        xycoords="axes fraction",
+        xytext=(0.6, 0.3),
+        textcoords="axes fraction",
+        ha="center",
+        va="center",
+        arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=-0.2"),
+        bbox=dict(boxstyle="round,pad=0.3", fc="yellow", ec="k", lw=1, alpha=0.3),
+    )
+
+    # Improve layout for all subplots
+    for ax in axs.flat:
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+    fig.tight_layout(rect=[0, 0.03, 1, 0.97])  # Adjust layout to make room for suptitle
+
+    # Save the figure
+    plot_dir = os.path.join(output_path, "plotting")
+    os.makedirs(plot_dir, exist_ok=True)
+    save_path = os.path.join(plot_dir, "comparison_summary.pdf")
+    fig.savefig(save_path, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  -> Comparison summary plot saved to: {save_path}")
