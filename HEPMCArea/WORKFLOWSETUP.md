@@ -3,9 +3,9 @@
 This takes you through how to setup a workflow for analysing HEPMC files in Rivet, and assumes that you already have your desired HEPMC file, from opendata or elsewhere. 
 
 This contains three main components 
-    * HEPMC
-    * Pythia
-    * Rivet
+*HEPMC
+*Pythia
+*Rivet
 
 This also assumes working from CERNs based lxplus cluster.
 
