@@ -44,6 +44,11 @@ rivet -a ATLAS_2019_I1725190 -o smeared_plots.yoda HEPMC.43646139._000001.hepmc
 rivet-mkhtml smeared_plots.yoda
 ```
 
+Plot of the result
+
+
+<img title="a title" alt="Alt text" src="./Images/SmearedAll.jpg">
+
 
 
 
