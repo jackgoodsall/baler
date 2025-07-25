@@ -12,6 +12,19 @@ The inital experimentation looked at what Rivet excepts from an incoming HEPMC f
 
 The data used corresponds to simulations of Drell-Yan process in the invariant mass range 250 - 400 GeV found [here](https://opendata.cern/record/160002) specifically the list called  mc16_13TeV_MC_301002_13tev_PowhegPythia8EvtGen_AZNLOCTEQ6L1_DYee_250M400_hepmc_file_index.json specifically HEPMC.43646139._000001.tar.gz.1.  This mass range was chosen as it contains the first bin edge in the Rivet analysis file [ATLAS_2019_I1725190](https://rivet.hepforge.org/analyses/ATLAS_2019_I1725190.html), the only relavent dilepton analysis file for 13TeV events at ATLAS.
 
+## Core analysis
+
+Before we doing any tests we first look at analysis of just the plain untouched file. This can be done using
+
+```bash
+rivet -a ATLAS_2019_I1725190 -o base_analysis.yoda HEPMC.43646139._000001.hepmc
+rivet-mkhtml base_analysis.yoda
+```
+and gives the following output (remembering our file is only from 250 - 400 GeV).
+
+![Yoda analysis]("/Images/Example.jpg")
+
+
 ## Energy, Mass and Invariant Mass consistancy 
 
 The first test was checking whether or not Rivet requires consistency of energy, mass and invariant mass. This was done through changing the 4 momenta of all particles.
@@ -31,4 +44,7 @@ Using the Rivet work flow
 rivet -a ATLAS_2019_I1725190 -o smeared_plots.yoda HEPMC.43646139._000001.hepmc
 rivet-mkhtml smeared_plots.yoda
 ```
+
+
+
 
