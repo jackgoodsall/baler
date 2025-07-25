@@ -22,8 +22,7 @@ rivet-mkhtml base_analysis.yoda
 ```
 and gives the following output (remembering our file is only from 250 - 400 GeV).
 
-![Yoda analysis]("/Images/Example.jpg")
-
+<img title="a title" alt="Alt text" src="./Images/Example.jpg">
 
 ## Energy, Mass and Invariant Mass consistancy 
 
