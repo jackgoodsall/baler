@@ -10,3 +10,4 @@
 2025-07-22 11:03:14 - hepmc - Model Training - Total time taken: 332.043 seconds
 2025-07-22 13:08:30 - hepmc - Compression Comparison - Total time taken: 3.842 seconds
 2025-07-24 13:39:11 - hepmc - Model Training - Total time taken: 422.472 seconds
+2025-07-28 17:34:27 - hepmc - Model Training - Total time taken: 786.792 seconds

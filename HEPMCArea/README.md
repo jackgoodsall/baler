@@ -44,11 +44,22 @@ rivet -a ATLAS_2019_I1725190 -o smeared_plots.yoda HEPMC.43646139._000001.hepmc
 rivet-mkhtml smeared_plots.yoda
 ```
 
-Plot of the result
 
+```console
+
+warning:[""]
+```
+
+Plot of the result
 
 <img title="a title" alt="Alt text" src="./Images/SmearedAll.jpg">
 
+Here we clearly see there is a differnece in the distributions when the final state 4 momenta is changed, as expected.
 
+## PYhepmc based analysis
+
+Analysis in Rivet is slow, tedious and expects a user to be on system that can make sure of the toolset. It is also doesn't have a very detailed analysis script for the desired process (Drell-Yan).  So a [pyhepmc](https://scikit-hep.org/pyhepmc/) based analysis was setup.
+
+THis can be found in the  final_state_plots.ipynb notebook. 
 
 

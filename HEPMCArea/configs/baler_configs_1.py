@@ -23,7 +23,7 @@ def set_config(c):
     c.min_delta                    = 0
     c.lr_scheduler_patience        = 50
     c.custom_norm                  = False
-    c.reg_param                    = 1
+    c.reg_param                    = 0.001
     c.RHO                          = 0.05
     c.test_size                    = 0.1
     # c.number_of_columns            = 24
