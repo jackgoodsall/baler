@@ -5,7 +5,7 @@ File to transform given data using defined transformations, and to be able to un
 """
 
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, QuantileTransformer
 
 
 # Oscars slog min max function https://github.com/OscarrrFuentes/baler/tree/higgs_rediscovery/V4_results
@@ -27,16 +27,16 @@ def inverse_log_minmax(norm_arr, *log):
 
 
 # Untransform
-UNTRANSFORM = False
+UNTRANSFORM = True
 
 # I/o Configss
 RAW_DATA_DIR = "HEPMCArea/DATA/"
 RAW_DATA_FILE_NAME = "MomentumOrdered100-000Events.npz" 
 SAVE_DATA_FILE_TO_DIR = "HEPMCArea/processedData/"
-SAVE_DATA_FILE_TO_NAME = "MomentumOrderedScaled100-000Events.npz"
-UNTRANSFORMED_DATA_FILE = "Unscaledreconstructed3.npz"
+SAVE_DATA_FILE_TO_NAME = "_.npz"
+UNTRANSFORMED_DATA_FILE = "ScaledQuantileTransformed.npz"
 
-UNTRANSFORMED_SAVE_FILE = "Scaledreconstructed3.npz"
+UNTRANSFORMED_SAVE_FILE = "UnscaledQuantileTransformed1.npz"
 
 # Load data store names and data
 input_file_object = np.load(RAW_DATA_DIR + RAW_DATA_FILE_NAME)
@@ -48,10 +48,19 @@ input_data /= 1000
 energy0, px0, py0, pz0 = input_data[:,3], input_data[:,0], input_data[:,1], input_data[:,2]
 energy1, px1, py1, pz1 =  input_data[:,7], input_data[:,4], input_data[:,5], input_data[:,6]
 
-# Fit standard scalar to 
+quantile_transformers = []
 new_data = []
+for column in [pz0, pz1]:
+    transformer = QuantileTransformer(output_distribution="normal")
+    new_column = transformer.fit_transform(column.reshape(-1, 1))
+    new_data.append(new_column.reshape(-1))
+    quantile_transformers.append(transformer)
+power_transformers_pz0, power_transformed_pz1 = new_data[0], new_data[1]
+
+# Fit standard scalar to 
 transformers = []
-for column in [px0, py0, pz0, px1, py1, pz1]:
+new_data = []
+for column in [px0, py0, power_transformers_pz0, px1, py1, power_transformed_pz1]:
     transformer = StandardScaler()
     new_column = transformer.fit_transform(column.reshape(-1 ,1 ))
     new_data.append(new_column.reshape(-1))
@@ -64,9 +73,9 @@ new_energy1, (scale_features1) = log_minmax(energy1)
 new_data.insert(3, new_energy0)
 new_data.append(new_energy1)
 
-
-np.savez(SAVE_DATA_FILE_TO_DIR + SAVE_DATA_FILE_TO_NAME
-         , data = np.array(new_data, dtype  =float).T, names = variable_names ) 
+if not UNTRANSFORM:
+    np.savez(SAVE_DATA_FILE_TO_DIR + SAVE_DATA_FILE_TO_NAME
+            , data = np.array(new_data, dtype  =float).T, names = variable_names ) 
 
 
 if UNTRANSFORM:
@@ -77,6 +86,10 @@ if UNTRANSFORM:
     energy01, px0, py0, pz0 = untransformed_data[:,3], untransformed_data[:,0], untransformed_data[:,1], untransformed_data[:,2]
     energy11, px1, py1, pz1 =  untransformed_data[:,7], untransformed_data[:,4], untransformed_data[:,5], untransformed_data[:,6]
 
+
+
+
+
     new_data = []
     for column, transformer in zip([px0, py0, pz0, px1, py1, pz1], transformers):
         new_column = transformer.inverse_transform(column.reshape(-1 ,1 ))
@@ -85,6 +98,12 @@ if UNTRANSFORM:
 
     new_energy0 = inverse_log_minmax(energy01, *scale_features0)
     new_energy1 = inverse_log_minmax(energy11, *scale_features1)
+
+
+
+    for transformer,column,i in zip(quantile_transformers, [new_data[2], new_data[5]], [2 ,5]):
+        new_column = transformer.inverse_transform(column.reshape(-1, 1))
+        new_data[i] = new_column.reshape(-1)
 
     new_data.insert(3, new_energy0)
     new_data.append(new_energy1)
