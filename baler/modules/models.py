@@ -746,7 +746,7 @@ class TransformerAE(nn.Module):
         in_dim,
         h_dim=256,
         n_heads=1,
-        latent_size=50,
+        latent_size=5,
         activation=torch.nn.functional.gelu,
     ):
         super(TransformerAE, self).__init__()
@@ -832,7 +832,7 @@ class TransformerAE(nn.Module):
             nhead=n_heads,
         )
 
-    def encoder(self, x: torch.Tensor):
+    def encode(self, x: torch.Tensor):
         """_summary_
 
         Args:
@@ -850,7 +850,7 @@ class TransformerAE(nn.Module):
 
         return z
 
-    def decoder(self, z: torch.Tensor):
+    def decode(self, z: torch.Tensor):
         """_summary_
 
         Args:
@@ -876,6 +876,6 @@ class TransformerAE(nn.Module):
         Returns:
             _type_: _description_
         """
-        z = self.encoder(x)
-        x = self.decoder(z)
+        z = self.encode(x)
+        x = self.decode(z)
         return x

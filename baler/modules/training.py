@@ -257,7 +257,7 @@ def train(model, variables, train_data, test_data, project_path, config):
         train_dl = DataLoader(
             train_ds,
             batch_size=bs,
-            shuffle=False,
+            shuffle=True,
             drop_last=False,
         )
         valid_dl = DataLoader(
