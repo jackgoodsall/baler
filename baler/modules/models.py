@@ -183,6 +183,48 @@ class AE(nn.Module):
             hook.remove()
 
 
+class BIGGER_AE(nn.Module):
+    """Moddified Version of AE for compatability with 
+    higher dimensional spaces"""
+
+    def __init__(self, n_features, z_dim, *args, **kwargs):
+        super(BIGGER_AE, self).__init__(*args, **kwargs)
+
+        self.activations = {}
+
+        # encoder
+        self.en1 = nn.Linear(n_features, 2056, dtype=torch.float64)
+        self.en2 = nn.Linear(2056, 512, dtype=torch.float64)
+        self.en3 = nn.Linear(512, 256, dtype=torch.float64)
+        self.en4 = nn.Linear(256, z_dim, dtype=torch.float64)
+        # decoder
+        self.de1 = nn.Linear(z_dim, 256, dtype=torch.float64)
+        self.de2 = nn.Linear(256, 512, dtype=torch.float64)
+        self.de3 = nn.Linear(512, 2056, dtype=torch.float64)
+        self.de4 = nn.Linear(2056, n_features, dtype=torch.float64)
+
+        self.n_features = n_features
+        self.z_dim = z_dim
+
+    def encode(self, x):
+        h1 = F.leaky_relu(self.en1(x))
+        h2 = F.leaky_relu(self.en2(h1))
+        h3 = F.leaky_relu(self.en3(h2))
+        return self.en4(h3)
+
+    def decode(self, z):
+        h4 = F.leaky_relu(self.de1(z))
+        h5 = F.leaky_relu(self.de2(h4))
+        h6 = F.leaky_relu(self.de3(h5))
+        out = self.de4(h6)
+        return out
+
+    def forward(self, x):
+        z = self.encode(x)
+        return self.decode(z)
+
+
+
 class AE_float32(AE):
     # This class defines an Autoencoder that inherits from the base `AE` class.
     # All linear layers are explicitly defined with `dtype=torch.float32`.
@@ -743,14 +785,17 @@ class TransformerAE(nn.Module):
 
     def __init__(
         self,
-        in_dim,
+        n_features,
+        z_dim,
+        in_dim = 8,
         h_dim=256,
         n_heads=1,
         latent_size=5,
         activation=torch.nn.functional.gelu,
     ):
         super(TransformerAE, self).__init__()
-
+        in_dim = n_features
+        
         self.transformer_encoder_layer_1 = torch.nn.TransformerEncoderLayer(
             batch_first=True,
             norm_first=True,
@@ -810,7 +855,7 @@ class TransformerAE(nn.Module):
         )
 
         self.transformer_decoder_layer_3 = torch.nn.TransformerEncoderLayer(
-            batch_first=True,
+            batch_first=False,
             d_model=128,
             activation=activation,
             dim_feedforward=128,
@@ -818,7 +863,7 @@ class TransformerAE(nn.Module):
         )
 
         self.transformer_decoder_layer_2 = torch.nn.TransformerEncoderLayer(
-            batch_first=True,
+            batch_first=False,
             d_model=256,
             activation=activation,
             dim_feedforward=256,
@@ -826,6 +871,7 @@ class TransformerAE(nn.Module):
         )
 
         self.transformer_decoder_layer_1 = torch.nn.TransformerEncoderLayer(
+            batch_first= False, 
             d_model=in_dim,
             dim_feedforward=h_dim,
             activation=activation,
@@ -865,6 +911,125 @@ class TransformerAE(nn.Module):
         x = self.transformer_decoder_layer_2(x)
         x = self.decoder_layer_1(x)
         x = self.transformer_decoder_layer_1(x)
+        return x
+
+    def forward(self, x: torch.Tensor):
+        """_summary_
+
+        Args:
+            z (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        z = self.encode(x)
+        x = self.decode(z)
+        return x
+
+
+
+class TransformerAE_two(nn.Module):
+    """Transformer model taken from Leonids github, other one caused shape errors.
+
+    Args:
+        nn (_type_): _description_
+    """
+
+    def __init__(
+        self,
+        n_features,
+        z_dim,
+        encoder_h_dim: list = [512, 256, 128],
+        decoder_h_dim: list = [128, 256, 512],
+        nheads=1,
+        latent_dim=100,
+        activation=torch.nn.functional.gelu,
+    ):
+        super(TransformerAE_two, self).__init__()
+        in_dim = n_features
+        out_dim = n_features
+        self.in_dim = n_features
+        self.out_dim = n_features
+        self.latent_dim = latent_dim
+
+        self.encoder_transformer_layers = torch.nn.ModuleList(
+            [
+                nn.TransformerEncoderLayer(
+                    batch_first=True,
+                    norm_first=True,
+                    d_model=i,
+                    activation=activation,
+                    dim_feedforward=i,
+                    nhead=nheads,
+                )
+                for i in ([in_dim] + encoder_h_dim[:] + [latent_dim])
+            ]
+        )
+
+        self.encoder_linear_layers = torch.nn.ModuleList(
+            [
+                torch.nn.Sequential(
+                    torch.nn.BatchNorm1d(i[0]),
+                    torch.nn.Linear(i[0], i[-1]),
+                    torch.nn.GELU(),
+                )
+                for i in zip([in_dim] + encoder_h_dim, encoder_h_dim + [latent_dim])
+            ]
+        )
+
+        self.decoder_transformer_layers = torch.nn.ModuleList(
+            [
+                nn.TransformerEncoderLayer(
+                    batch_first=True,
+                    norm_first=True,
+                    d_model=i,
+                    activation=activation,
+                    dim_feedforward=i,
+                    nhead=nheads,
+                )
+                for i in ([latent_dim] + decoder_h_dim[:] + [out_dim])
+            ]
+        )
+
+        self.decoder_linear_layers = torch.nn.ModuleList(
+            [
+                torch.nn.Sequential(
+                    torch.nn.BatchNorm1d(i[0]),
+                    torch.nn.Linear(i[0], i[-1]),
+                    torch.nn.GELU(),
+                )
+                for i in zip([latent_dim] + decoder_h_dim, decoder_h_dim + [out_dim])
+            ]
+        )
+
+    def encode(self, x: torch.Tensor):
+        """_summary_
+
+        Args:
+            x (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        for i, layer in enumerate(self.encoder_linear_layers):
+            x = self.encoder_transformer_layers[i](x)
+            x = self.encoder_linear_layers[i](x)
+        x = self.encoder_transformer_layers[-1](x)
+        return x
+
+    def decode(self, x: torch.Tensor):
+        """_summary_
+
+        Args:
+            z (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        for i, layer in enumerate(self.decoder_linear_layers):
+            x = self.decoder_transformer_layers[i](x)
+            x = self.decoder_linear_layers[i](x)
+        x = self.decoder_transformer_layers[-1](x)
         return x
 
     def forward(self, x: torch.Tensor):
