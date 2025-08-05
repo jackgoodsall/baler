@@ -125,15 +125,15 @@ class AE(nn.Module):
         self.activations = {}
 
         # encoder
-        self.en1 = nn.Linear(n_features, 200, dtype=torch.float64)
-        self.en2 = nn.Linear(200, 100, dtype=torch.float64)
-        self.en3 = nn.Linear(100, 50, dtype=torch.float64)
-        self.en4 = nn.Linear(50, z_dim, dtype=torch.float64)
+        self.en1 = nn.Linear(n_features, 200)
+        self.en2 = nn.Linear(200, 100)
+        self.en3 = nn.Linear(100, 50)
+        self.en4 = nn.Linear(50, z_dim)
         # decoder
-        self.de1 = nn.Linear(z_dim, 50, dtype=torch.float64)
-        self.de2 = nn.Linear(50, 100, dtype=torch.float64)
-        self.de3 = nn.Linear(100, 200, dtype=torch.float64)
-        self.de4 = nn.Linear(200, n_features, dtype=torch.float64)
+        self.de1 = nn.Linear(z_dim, 50)
+        self.de2 = nn.Linear(50, 100)
+        self.de3 = nn.Linear(100, 200)
+        self.de4 = nn.Linear(200, n_features)
 
         self.n_features = n_features
         self.z_dim = z_dim
@@ -193,15 +193,15 @@ class BIGGER_AE(nn.Module):
         self.activations = {}
 
         # encoder
-        self.en1 = nn.Linear(n_features, 2048, dtype=torch.float64)
-        self.en2 = nn.Linear(2048, 512, dtype=torch.float64)
-        self.en3 = nn.Linear(512, 256, dtype=torch.float64)
-        self.en4 = nn.Linear(256, z_dim, dtype=torch.float64)
+        self.en1 = nn.Linear(n_features, 2048)
+        self.en2 = nn.Linear(2048, 512)
+        self.en3 = nn.Linear(512, 256)
+        self.en4 = nn.Linear(256, z_dim)
         # decoder
-        self.de1 = nn.Linear(z_dim, 256, dtype=torch.float64)
-        self.de2 = nn.Linear(256, 512, dtype=torch.float64)
-        self.de3 = nn.Linear(512, 2048, dtype=torch.float64)
-        self.de4 = nn.Linear(2048, n_features, dtype=torch.float64)
+        self.de1 = nn.Linear(z_dim, 256)
+        self.de2 = nn.Linear(256, 512)
+        self.de3 = nn.Linear(512, 2048)
+        self.de4 = nn.Linear(2048, n_features)
 
         self.n_features = n_features
         self.z_dim = z_dim
@@ -210,7 +210,7 @@ class BIGGER_AE(nn.Module):
         h1 = F.leaky_relu(self.en1(x))
         h2 = F.leaky_relu(self.en2(h1))
         h3 = F.leaky_relu(self.en3(h2))
-        return self.en4(h3)
+        return F.leaky_relu(self.en4(h3))
 
     def decode(self, z):
         h4 = F.leaky_relu(self.de1(z))
@@ -224,8 +224,6 @@ class BIGGER_AE(nn.Module):
         return self.decode(z)
 
 
-
-
 class BIGGER_AE_Dropout_BN(nn.Module):
     def __init__(self, n_features, z_dim, *args, **kwargs):
         super(BIGGER_AE_Dropout_BN, self).__init__(*args, **kwargs)
@@ -235,15 +233,15 @@ class BIGGER_AE_Dropout_BN(nn.Module):
             nn.Linear(n_features, 2048, dtype=torch.float64),
             nn.Dropout(p=0.5),
             nn.LeakyReLU(),
-            nn.BatchNorm1d(200,dtype=torch.float64),
+            nn.BatchNorm1d(2048,dtype=torch.float64),
             nn.Linear(2048, 512, dtype=torch.float64),
             nn.Dropout(p=0.4),
             nn.LeakyReLU(),
-            nn.BatchNorm1d(100,dtype=torch.float64),
+            nn.BatchNorm1d(512,dtype=torch.float64),
             nn.Linear(512, 256, dtype=torch.float64),
             nn.Dropout(p=0.3),
             nn.LeakyReLU(),
-            nn.BatchNorm1d(50,dtype=torch.float64),
+            nn.BatchNorm1d(256,dtype=torch.float64),
             nn.Linear(256, z_dim, dtype=torch.float64),
             nn.Dropout(p=0.2),
             nn.LeakyReLU(),
@@ -255,15 +253,15 @@ class BIGGER_AE_Dropout_BN(nn.Module):
             nn.Linear(z_dim, 256, dtype=torch.float64),
             nn.Dropout(p=0.2),
             nn.LeakyReLU(),
-            nn.BatchNorm1d(50, dtype=torch.float64),
+            nn.BatchNorm1d(256, dtype=torch.float64),
             nn.Linear(256, 512, dtype=torch.float64),
             nn.Dropout(p=0.3),
             nn.LeakyReLU(),
-            nn.BatchNorm1d(100, dtype=torch.float64),
+            nn.BatchNorm1d(512, dtype=torch.float64),
             nn.Linear(512, 2048, dtype=torch.float64),
             nn.Dropout(p=0.4),
             nn.LeakyReLU(),
-            nn.BatchNorm1d(200, dtype=torch.float64),
+            nn.BatchNorm1d(2048, dtype=torch.float64),
             nn.Linear(2048, n_features, dtype=torch.float64),
             nn.Dropout(p=0.5),
             nn.BatchNorm1d(n_features, dtype=torch.float64),
@@ -287,11 +285,7 @@ class BIGGER_AE_Dropout_BN(nn.Module):
 
 
 class TransformerAE_two(nn.Module):
-    """Transformer model taken from Leonids github, other one caused shape errors.
-
-    Args:
-        nn (_type_): _description_
-    """
+    """Transformer Autoencoder with a final linear output layer."""
 
     def __init__(
         self,
@@ -299,106 +293,146 @@ class TransformerAE_two(nn.Module):
         z_dim,
         encoder_h_dim: list = [512, 256, 128],
         decoder_h_dim: list = [128, 256, 512],
-        nheads=1,
-        latent_dim=100,
+        nheads=2,
+        latent_dim=40,
         activation=torch.nn.functional.gelu,
     ):
         super(TransformerAE_two, self).__init__()
         in_dim = n_features
-        out_dim = n_features
+        out_dim = n_features    
         self.in_dim = n_features
         self.out_dim = n_features
         self.latent_dim = latent_dim
 
-        self.encoder_transformer_layers = torch.nn.ModuleList(
-            [
-                nn.TransformerEncoderLayer(
-                    batch_first=True,
-                    norm_first=True,
-                    d_model=i,
-                    activation=activation,
-                    dim_feedforward=i,
-                    nhead=nheads,
-                )
-                for i in ([in_dim] + encoder_h_dim[:] + [latent_dim])
-            ]
-        )
+        self.encoder_transformer_layers = nn.ModuleList([
+            nn.TransformerEncoderLayer(
+                batch_first=True,
+                norm_first=True,
+                d_model=i,
+                activation=activation,
+                dim_feedforward=i,
+                nhead=nheads,
+            )
+            for i in ([in_dim] + encoder_h_dim[:] + [latent_dim])
+        ])
 
-        self.encoder_linear_layers = torch.nn.ModuleList(
-            [
-                torch.nn.Sequential(
-                    torch.nn.BatchNorm1d(i[0]),
-                    torch.nn.Linear(i[0], i[-1]),
-                    torch.nn.GELU(),
-                )
-                for i in zip([in_dim] + encoder_h_dim, encoder_h_dim + [latent_dim])
-            ]
-        )
+        self.encoder_linear_layers = nn.ModuleList([
+            nn.Sequential(
+                nn.BatchNorm1d(i[0]),
+                nn.Linear(i[0], i[-1]),
+                nn.GELU(),
+            )
+            for i in zip([in_dim] + encoder_h_dim, encoder_h_dim + [latent_dim])
+        ])
 
-        self.decoder_transformer_layers = torch.nn.ModuleList(
-            [
-                nn.TransformerEncoderLayer(
-                    batch_first=True,
-                    norm_first=True,
-                    d_model=i,
-                    activation=activation,
-                    dim_feedforward=i,
-                    nhead=nheads,
-                )
-                for i in ([latent_dim] + decoder_h_dim[:] + [out_dim])
-            ]
-        )
+        self.decoder_transformer_layers = nn.ModuleList([
+            nn.TransformerEncoderLayer(
+                batch_first=True,
+                norm_first=True,
+                d_model=i,
+                activation=activation,
+                dim_feedforward=i,
+                nhead=nheads,
+            )
+            for i in ([latent_dim] + decoder_h_dim)
+        ])
 
-        self.decoder_linear_layers = torch.nn.ModuleList(
-            [
-                torch.nn.Sequential(
-                    torch.nn.BatchNorm1d(i[0]),
-                    torch.nn.Linear(i[0], i[-1]),
-                    torch.nn.GELU(),
-                )
-                for i in zip([latent_dim] + decoder_h_dim, decoder_h_dim + [out_dim])
-            ]
-        )
+        self.decoder_linear_layers = nn.ModuleList([
+            nn.Sequential(
+                nn.BatchNorm1d(i[0]),
+                nn.Linear(i[0], i[-1]),
+                nn.GELU(),
+            )
+            for i in zip([latent_dim] + decoder_h_dim[:-1], decoder_h_dim)
+        ])
+
+  
+        self.final_output_layer = nn.Linear(decoder_h_dim[-1], out_dim)
 
     def encode(self, x: torch.Tensor):
-        """_summary_
-
-        Args:
-            x (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
-        for i, layer in enumerate(self.encoder_linear_layers):
+        for i in range(len(self.encoder_linear_layers)):
             x = self.encoder_transformer_layers[i](x)
             x = self.encoder_linear_layers[i](x)
         x = self.encoder_transformer_layers[-1](x)
         return x
 
     def decode(self, x: torch.Tensor):
-        """_summary_
-
-        Args:
-            z (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
-        for i, layer in enumerate(self.decoder_linear_layers):
+        for i in range(len(self.decoder_linear_layers)):
             x = self.decoder_transformer_layers[i](x)
             x = self.decoder_linear_layers[i](x)
         x = self.decoder_transformer_layers[-1](x)
+        x = self.final_output_layer(x)  
         return x
 
     def forward(self, x: torch.Tensor):
-        """_summary_
-
-        Args:
-            z (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
         z = self.encode(x)
         x = self.decode(z)
         return x
+
+
+class ResidualConnectionAE(nn.Module):
+    def __init__(self, n_features, z_dim, *args, **kwargs):
+        super(ResidualConnectionAE, self).__init__()
+
+        self.n_features = n_features
+        self.z_dim = z_dim
+
+        self.e1 = nn.Sequential(
+            nn.Linear(n_features, 2048),
+            nn.LeakyReLU(),
+        )
+        self.e2 = nn.Sequential(
+            nn.Linear(2048, 512),
+            nn.LeakyReLU(),
+        )
+        self.e3 = nn.Sequential(
+            nn.Linear(512, 256),
+            nn.LeakyReLU(),
+        )
+        self.e4 =  nn.Sequential(
+            nn.Linear(256, z_dim),
+            nn.LeakyReLU(),
+        )
+
+        self.d1 = nn.Sequential(
+            nn.Linear(z_dim, 256),
+            nn.LeakyReLU(),
+        )
+        self.d2 = nn.Sequential(
+            nn.Linear(256, 512),
+            nn.LeakyReLU(),
+        )
+        self.d3 = nn.Sequential(
+            nn.Linear(512, 2048),
+            nn.LeakyReLU(),
+        )
+        self.d4 = nn.Sequential(
+            nn.Linear(2048, n_features)
+        )
+
+    def encode(self, x):
+        x = self.e1(x)
+        x = self.e2(x)
+        x = self.e3(x)
+        x = self.e4(x)
+        return x
+
+    def decode(self, z: torch.Tensor) ->  torch.Tensor:
+        z = self.d1(z)
+        z = self.d2(z)
+        z = self.d3(z)
+        z = self.d4(z)
+        return z
+
+    def forward(self, x):
+        x1 = self.e1(x)
+        x2 = self.e2(x1)
+        x3 = self.e3(x2)
+        x4 = self.e4(x3)
+
+        z1  = x3 + self.d1(x4)
+        z2 = x2 + self.d2(z1)
+        z3 = x1 + self.d3(z2)
+        z4 = self.d4(z3)
+
+        return z4

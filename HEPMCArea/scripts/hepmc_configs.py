@@ -46,3 +46,7 @@ class HistConfigurations(PlotConfiguration):
     ratio_y_rotation: int = 0
     ratio_y_size: int = 15
     ratio_y_pad: int = 20
+
+    to_plot_scatter: bool = True
+    scatter_title:  str = ""
+    

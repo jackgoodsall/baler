@@ -85,7 +85,7 @@ def fit(
                 true_data=inputs,
                 reconstructed_data=reconstructions,
                 reg_param=regular_param,
-                validate=False,
+                validate=True,
             )
 
         # Compute the loss-gradient with
@@ -169,7 +169,7 @@ def train(model, variables, train_data, test_data, project_path, config):
         random.seed(0)
         torch.manual_seed(0)
         np.random.seed(0)
-        torch.use_deterministic_algorithms(True)
+        torch.use_deterministic_algorithms(False)
         g = torch.Generator()
         g.manual_seed(0)
 
@@ -258,7 +258,7 @@ def train(model, variables, train_data, test_data, project_path, config):
             train_ds,
             batch_size=bs,
             shuffle=True,
-            drop_last=False,
+            drop_last=True,
         )
         valid_dl = DataLoader(
             valid_ds,

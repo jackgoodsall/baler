@@ -10,7 +10,7 @@ def set_config(c):
     c.model_type                    = "dense"
     c.epochs                       =  1000 
     c.lr                           = 0.001
-    c.batch_size                   = 256
+    c.batch_size                   = 1024
     c.early_stopping               = True
     c.lr_scheduler                 = True
 

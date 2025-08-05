@@ -514,7 +514,7 @@ def compress(model_path, config):
         n_features = 0
         if config.data_dimension == 1:
             column_names = np.load(config.input_path)["names"]
-            number_of_columns = len(column_names)
+            number_of_columns = config.number_of_columns
             config.latent_space_size = ceil(
                 number_of_columns / config.compression_ratio
             )
@@ -681,7 +681,7 @@ def decompress(
     if config.data_dimension == 2 and config.model_type == "dense":
         number_of_columns = int((len(model_dict[list(model_dict.keys())[-1]])))
     else:
-        number_of_columns = len(model_dict[list(model_dict.keys())[-1]])
+        number_of_columns = config.number_of_columns
 
     # Initialise and load the model correctly.
     device = get_device()
