@@ -117,12 +117,13 @@ def plot_1D(output_path: str, config, extra_path):
         write_path = os.path.join(extra_path, "comparison.pdf")
 
     before = np.transpose(np.load(before_path)["data"])
+    print(before.shape)
     after = np.transpose(np.load(after_path)["data"])
     names = np.load(config.input_path)["names"]
-
-    index_to_cut = get_index_to_cut(3, 1e-6, before)
-    before = np.delete(before, index_to_cut, axis=1)
-    after = np.delete(after, index_to_cut, axis=1)
+    ## TO DO NEEDS FIXING WAS RANDOMY CUTTING LOW ENERGIES
+    index_to_cut = None
+    #before = np.delete(before, index_to_cut, axis=1)
+    #after = np.delete(after, index_to_cut, axis=1)
 
     response = np.divide(np.subtract(after, before), before) * 100
     residual = np.subtract(after, before)
