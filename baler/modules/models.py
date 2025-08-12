@@ -294,7 +294,7 @@ class TransformerAE_two(nn.Module):
         encoder_h_dim: list = [512, 256, 128],
         decoder_h_dim: list = [128, 256, 512],
         nheads=2,
-        latent_dim=40,
+        latent_dim=64,
         activation=torch.nn.functional.gelu,
     ):
         super(TransformerAE_two, self).__init__()

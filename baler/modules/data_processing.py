@@ -143,7 +143,7 @@ def normalize(data, custom_norm: bool):
     """
     data = np.array(data)
     if custom_norm:
-        pass
+        return data
     elif not custom_norm:
         true_min = np.min(data)
         true_max = np.max(data)
