@@ -11,7 +11,7 @@ RAW_DATA_FILE_NAME = "MomentumOrdered100-000Events20ParticlesFlattened.npz"
 SAVE_DATA_FILE_TO_DIR = "HEPMCArea/processedData/20EventData/"
 SAVE_DATA_FILE_TO_NAME = "100-000Events20ParticlesNormalScaled.npz"
 UNTRANSFORMED_DATA_FILE = "decompressed.npz"
-UNTRANSFORMED_SAVE_FILE = "BiggerAE.npz"
+UNTRANSFORMED_SAVE_FILE = "test.npz"
 print(os.getcwd())
 # --------------------------
 # Load data
