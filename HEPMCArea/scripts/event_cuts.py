@@ -19,6 +19,7 @@ class CutConfigurations:
     
 
 class EventCuts:
+    """Parent class for making event cuts"""
     def __init__(self, **kwargs):
         self.cut_function = self.make_cuts
         self.cut_indexes = None
@@ -28,10 +29,11 @@ class EventCuts:
         mask = np.zeros(len(events), dtype=bool)
         for cut_func, params in self.cut_config.cuts.items():
             cutter = cut_func(**params)  
-            mask |= cutter.make_cuts(events) 
+            mask |= cutter.fit_cuts(events) 
         self.cut_indexes = mask
     
     def make_cuts(self, events):
+        # Apply cuts from the stored boolian mask, assumes fit_cuts is already been called.
         return events[:, ~self.cut_indexes]
     
 
@@ -45,7 +47,7 @@ class TransverseMomentumCut(EventCuts):
         self.pt1_lower_bound = cut_paramaters.get("pt1_lower", 0)
         self.pt1_upper_bound = cut_paramaters.get("pt1_upper", np.inf)
 
-    def make_cuts(self, events):
+    def fit_cuts(self, events):
         ## Make cuts, vectorise momentum_cuts 
         cut_func = np.vectorize(self._momentum_cuts, signature='(n)->()')
         # Save indexes and return them
@@ -67,11 +69,13 @@ class TransverseMomentumCut(EventCuts):
 
 
 class EtaCut(EventCuts):
+    """Class for Eta cuts on the variable."""
     def __init__(self, **cut_paramaters):
         self.cut_indexes = None
         self.eta_min = cut_paramaters.get("eta_min", 1.37)
         self.eta_max = cut_paramaters.get("eta_max", 1.52)
-    def make_cuts(self, events):
+
+    def fit_cuts(self, events):
         cut_func = np.vectorize(self._cut_eta, signature="(n)->()")
         self.cut_indexes = cut_func(events).astype(bool)
         return self.cut_indexes
@@ -83,7 +87,6 @@ class EtaCut(EventCuts):
         if abs(eta1) > self.eta_min and abs(eta1) < self.eta_max:
             return 1
         return 0
-       
 
     def _calculate_eta(self, event):
         px0, py0, pz0 = event[0], event[1], event[2]
