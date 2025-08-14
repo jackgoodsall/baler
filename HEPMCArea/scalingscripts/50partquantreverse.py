@@ -65,7 +65,7 @@ for i in range(P):
 
 out_names = np.array([f"p{i}_{c}" for i in range(P) for c in ("px","py","pz","E")], dtype=np.str_)
 
--
+
 os.makedirs(OUT_DIR, exist_ok=True)
 np.savez(out_path, data=X_cart, names=out_names)
 print(f"Saved: {out_path}  shape={X_cart.shape}")

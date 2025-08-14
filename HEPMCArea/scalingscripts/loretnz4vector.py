@@ -14,7 +14,7 @@ variable_names = saved_obj["names"]
 N_samples, total = data.shape
 N_particles = total // 4
 
-# reshape to (N_samples*N_particles, 4)
+
 flat = data.reshape(-1, 4)
 print(data.shape)
 # build one vector.obj per 4-tuple
@@ -28,8 +28,7 @@ vectors = [
     for px, py, pz, E in flat
 ]
 
-# now vectors is a list of length N_samples*N_particles
-# extract each property back into arrays
+
 E_all   = np.array([v.E   for v in vectors]).reshape(N_samples, N_particles)
 pt_all  = np.array([v.pt  for v in vectors]).reshape(N_samples, N_particles)
 eta_all = np.array([v.eta for v in vectors]).reshape(N_samples, N_particles)
