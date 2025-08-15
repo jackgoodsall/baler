@@ -165,7 +165,7 @@ We then apply quantile to normal to all distributions, this was used as a quick 
 
 The best model for this was the transformer model with the following loss curve. 
 
-<img src ="Images/TransformerLossCurve.png">
+<img src ="Images/TransformerLossCurves.png">
 
 
 The reconstruction quality can be seen here
