@@ -16,8 +16,8 @@ import argparse
 import importlib
 import os
 import sys
+from datetime import datetime
 from dataclasses import dataclass
-from typing import List, Optional
 from math import ceil
 import gzip
 
@@ -29,27 +29,33 @@ import torch
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
-from ..modules import training, plotting, data_processing, diagnostics, normalisations
+from ..modules import training, plotting, data_processing, diagnostics
 
 
 def get_arguments():
     """Determines the arguments one is able to apply in the command line when running Baler. Use `--help` to see what
     options are available.
 
-    Returns: .py, string, folder: `.py` file containing the config options, string determining what mode to run,
-    projects directory where outputs go.
+    Returns:
+        tuple: (config (Config or None), mode (str), workspace_name (str), project_name (str), verbose (bool))
     """
     parser = argparse.ArgumentParser(
         prog="baler",
         description=(
             "Baler is a machine learning based compression tool for big data.\n\n"
-            "Baler has three running modes:\n\n"
-            '\t1. Derivation: Using a configuration file and a "small" input dataset, Baler derives a '
+            "Baler has nine running modes:\n\n"
+            "\t1. newProject: Creates a new project directory, with default configuration files.\n\n"
+            '\t2. train: Using a configuration file and a "small" input dataset, Baler derives a '
             "machine learning model optimized to compress and decompress your data.\n\n"
-            "\t2. Compression: Using a previously derived model and a large input dataset, Baler compresses "
+            "\t3. compress: Using a previously derived model and a large input dataset, Baler compresses "
             "your data and outputs a smaller compressed file.\n\n"
-            "\t3. Decompression: Using a previously compressed file as input and a model, Baler decompresses "
-            "your data into a larger file."
+            "\t4. decompress: Using a previously compressed file as input and a model, Baler decompresses "
+            "your data into a larger file.\n\n"
+            "\t5. plot: Creates plots from the training output data.\n\n"
+            "\t6. info: Displays information about the project and workspace.\n\n"
+            "\t7. hls4ml: Converts the trained model to an HLS4ML project for FPGA deployment.\n\n"
+            "\t8. diagnose: Runs diagnostics on the activations of the trained model.\n\n"
+            "\t9. compare: Compares the performance of the trained model with other models.\n\n"
         ),
         epilog="Enjoy!",
         formatter_class=argparse.RawTextHelpFormatter,
@@ -178,7 +184,6 @@ class Config:
     emd: bool
     l1: bool
     deterministic_algorithm: bool
-    custom_norms_axis: Optional[List[str]]
 
 
 def create_default_config(workspace_name: str, project_name: str) -> str:
@@ -260,7 +265,7 @@ def numpy_to_tensor(data):
     return torch.from_numpy(data)
 
 
-def normalize(data, custom_norm, norms_axis = None):
+def normalize(data, custom_norm):
     """Applies `data_processing.normalize()` along every axis of given data
 
     Args:
@@ -270,20 +275,6 @@ def normalize(data, custom_norm, norms_axis = None):
     Returns:
         ndarray: Normalized data
     """
-    if norms_axis:
-        try:
-            assert len(norms_axis) == len(data)
-            for index, norm_func in enumerate(norms_axis):
-                if norm_func:
-                    data[index] = data_processing.normalize(
-                        data[index],  
-                        custom_norm = True if norm_func else False, 
-                        custom_norm_function = norm_func if norm_func else None
-                    )
-        except:
-            print("Normalisation list has mismatched shape with the data")
-            print("Applying no normalisation")
-        return data
     data = np.apply_along_axis(
         data_processing.normalize, axis=0, arr=data, custom_norm=custom_norm
     )
@@ -309,10 +300,9 @@ def process(
     Returns: ndarray, ndarray, ndarray: Array with the train set, array with the test set and array with the
     normalization features.
     """
-  
     loaded = np.load(input_path)
     data = loaded["data"]
-    print()
+
     if verbose:
         print("Original Dataset Shape - ", data.shape)
 
@@ -516,7 +506,7 @@ def compress(model_path, config):
 
     if config.apply_normalization:
         print("Normalizing...")
-        data = normalize(data_before, config.custom_norm, config.custom_norms_axis)
+        data = normalize(data_before, config.custom_norm)
     else:
         data = data_before
     number_of_columns = 0
@@ -524,7 +514,7 @@ def compress(model_path, config):
         n_features = 0
         if config.data_dimension == 1:
             column_names = np.load(config.input_path)["names"]
-            number_of_columns = len(column_names)
+            number_of_columns = config.number_of_columns
             config.latent_space_size = ceil(
                 number_of_columns / config.compression_ratio
             )
@@ -579,7 +569,10 @@ def compress(model_path, config):
                 data.shape[0], data.shape[1] * data.shape[2]
             )
     elif config.data_dimension == 1:
-        data_tensor = torch.tensor(data, dtype=torch.float64)
+        if hasattr(config, "float_dtype") and config.float_dtype == "float32":
+            data_tensor = torch.tensor(data, dtype=torch.float32)
+        else:
+            data_tensor = torch.tensor(data, dtype=torch.float64)
 
     # Batching data to avoid memory leaks
     data_dl = DataLoader(
@@ -688,7 +681,7 @@ def decompress(
     if config.data_dimension == 2 and config.model_type == "dense":
         number_of_columns = int((len(model_dict[list(model_dict.keys())[-1]])))
     else:
-        number_of_columns = len(model_dict[list(model_dict.keys())[-1]])
+        number_of_columns = config.number_of_columns
 
     # Initialise and load the model correctly.
     device = get_device()
@@ -757,7 +750,17 @@ def diagnose(input_path: str, output_path: str) -> None:
         input_path (str): path to the np.array contataining the activations values
         output_path (str): path to store the diagnostics pdf
     """
-    diagnostics.diagnose(input_path, output_path)
+    try:
+        diagnostics.diagnose(input_path, output_path)
+    except FileNotFoundError as e:
+        print(
+            "An error occurred while running diagnostics. "
+            "Please ensure that the activations.npy file exists in the training folder and try again."
+        )
+    except Exception as e:
+        print("An unexpected error occurred while running diagnostics. ")
+        print(f"Error details: {e}")
+        raise
 
 
 def perform_hls4ml_conversion(output_path, config):
@@ -866,3 +869,23 @@ def perform_hls4ml_conversion(output_path, config):
     hls_model.build(
         csim=config.csim, synth=config.synth, cosim=config.cosim, export=config.export
     )
+
+
+def green_code_tracking(start, end, title, verbose=False, testing=False):
+    if testing:
+        file_name = "green_code_tracking_test.txt"
+    else:
+        file_name = "green_code_tracking.txt"
+    if verbose:
+        print("\n" + "=" * 150)
+        print(
+            f"                    GREEN CODE INITIATIVE - {title}                          "
+        )
+        print("-" * 150)
+        print(f"Total time taken for {title}: {end - start:.3f} seconds")
+        print(f"{title} complete. All results saved in the output directory.")
+        print("\n" + "=" * 150)
+    with open(file_name, "a") as f:
+        f.write(
+            f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {title} - Total time taken: {end - start:.3f} seconds\n"
+        )

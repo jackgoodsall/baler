@@ -195,7 +195,6 @@ def mse_sum_loss_l1(model_children, true_data, reconstructed_data, reg_param, va
     mse_sum = nn.MSELoss(reduction="sum")
     mse_loss = mse_sum(reconstructed_data, true_data)
     number_of_columns = true_data.shape[1]
-    
 
     mse_sum_loss = mse_loss / number_of_columns
 
@@ -317,7 +316,7 @@ class LRScheduler:
             patience=self.patience,
             factor=self.factor,
             min_lr=self.min_lr,
-            verbose=True,
+            # verbose=True, # commented out as now deprecated, use get_last_lr() instead
         )
 
     def __call__(self, train_loss):

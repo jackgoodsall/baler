@@ -1,25 +1,21 @@
-[![DOI](https://zenodo.org/badge/576188110.svg)](https://zenodo.org/badge/latestdoi/576188110)\
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)\
-![example workflow](https://github.com/baler-compressor/baler/actions/workflows/test_and_lint.yaml/badge.svg)
-![example workflow](https://github.com/baler-compressor/baler/actions/workflows/docker.yaml/badge.svg)
+# Investigating the use of machine learning for lossy data compression on HEPMC data with Baler
 
-# Introduction
-Baler is a tool used to test the feasibility of compressing different types of scientific data using machine learning-based autoencoders. Baler provides you with an easy way to:
-1. Train a machine learning model on your data
-2. Compress your data with that model. This will also save the compressed file and model
-3. Decompress the file using the model at a later time
-4. Plot the performance of the compression/decompression
+## Overview
 
+This repo and set of README's is set up to show my contribution to the investigation on the use of lossy data compression for HEPMC files, the instructions on how to set up Baler can be found [here](BALERSETUP.md), but also can and should be ran on the main branch of the forked repository for the main project [here](https://github.com/baler-collaboration/baler). The Baler scripts in this repo have been edited to allow for easier debugging and sanity checks in early development of my investigation to ensure everything was working as intended, these are not needed and running on the main branch is advisable.
 
-# Getting Started #
-**NOTE:** For the same performance and version as presented in our [Arxiv](https://arxiv.org/abs/2305.02283) paper, please use release [v1.0.0](https://github.com/baler-collaboration/baler/tree/v1.0.0) and the setup instructions given there. v1.0.0 also has a working docker implementation. We are currently experiencing some performance issues on the main branch compared.
+## HEPMC
 
-In the links below we offer instructions on how to set up Baler and working tutorial examples to get you started. We offer two ways to run baler:
-* [Python](docs/setup/python_setup.md)
-* [Docker/Singularity/Apptainer](docs/setup/docker_setup.md)
+All the writeup's, result and step's taken in the goal of trying to get a working lossy compression of HEPMC files can be found in set of README's found in the [HEPMCarea Folder](/HEPMCArea/) with the one being found [here](/HEPMCArea/README.md).
+
+## What I learnt / personal reflection
+
+After every project I do, whether a personal project or university/internship related such as this one I liked to write a short personal reflection of what I learnt, both of how to proceed and in terms of programme/coding structure.
+
+Starting with how to approach research the main thing I learnt is to take small steps even if they don't look like they are working towards the end goal in any way, this both helped mentally to feel I was accomplishing something every few days and to help feel like the end goal wasn't a marathon away.
+
+In terms of programming/coding the main thing I learnt is to take some time at the beginning to set up a good experiment tracker early, something like wandb or Mlflow. After trying like 5/6 differnet sets of hyperparamaters/preprocessing techniques it got hard to track which belonged to which and exactly what configs were used for each, and made me wished I had used some time early on to set up something like Mlflow.
 
 
 
-# Contributing
 
-If you wish to contribute, please see the [contribution guidelines](https://github.com/baler-collaboration/baler/blob/main/docs/CONTRIBUTING.md).
