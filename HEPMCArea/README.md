@@ -1,5 +1,8 @@
 # HEPMC BALER experimentation
 
+The daily log of all of this can be found [here](https://docs.google.com/document/d/1-M28zPv_RVU4o3_Fs4iOYeB0de7bA9g7b1fs3CEkxuI/edit?usp=drive_web&ouid=111186172370210274872.)
+
+
 HEPMC are text based files for monte carlo event generation data. They are commonly analysed in Rivet or other C++ based analysis programmes. If you would like to set up the C++ workflow instruction can be found in WORKFLOWSETUP.md, although assumes that you are working from CERNs lxplus cluster in the eos folder.
 
 ## Overview
@@ -84,6 +87,10 @@ The proprocessing of these blocks depends on experiment but the common ones were
 
 Quantile scaling was used to ensure they are all distributed the same, although their are definately better methods to be used since this bounds the reconstruction only to values seen in the original data it is trained on.
 
+### config
+
+An example config can be found [here](configs/baler_configs_1.py), where the only things changed can be seen in the loss plots information box.
+
 ### Reconstructing (px, py, pz, E) blocks
 
 First I looked at compressing and reconstructing HEPMC's native 4 momenta coordinates, which is in cartesian. This was done in a variety of different preprocessing schemas and different models.
@@ -111,6 +118,21 @@ Small lr needed since large amount of data, (100,000 events) and (80 features). 
 
 Main preprocessing scheme was to convert from MeV -> GeV, then scale px and py's from standard scaling and py, E from quantile into normal distribution.
 
+The best model was the BIGGER_AE with the following loss curve 
+
+<img src ="Images/Particles20LossCurve.png">
+
+this gave the following invariant mass reconstruction.
+
+<img src = "">
+
+And an example of the reconstruction of a single distribution is shown here.
+
+<img src = "">
+
+
+As we see individual quantities are reconstructed much better then the derived quantities.
+
 
 ## 50 Particle experiments
 Once we moved onto 50 particles we also decided to look at the cylindrical coordinates to see if this improved the reconstruction of the derived quanities.
@@ -121,7 +143,13 @@ For this we also increased the compression rate, with a latent space size of 64,
 
 ### Cartesian
 
-First we experimented with compression in cartesian coordiates.
+First we experimented with compression in cartesian coordiates. This is basically the same as the 20 particle experiments. Just with retrained models. 
+
+Here the best model was the Transformer
+
+This gave the following loss curve. 
+
+<img src = "Images/TransformerLossCurveCartesian.png">
 
 ### Cylindrical
 
@@ -151,9 +179,7 @@ Although still have poor single particle invariant mass reconstruction
 
 ## Main problems seen in reconstruction
 
-The main problem/thing affecting performance was the fact that most of the reconstructed particles we see that $|p| > E$ which we know to be unphysical, this appeared whether I tried cartesian or cylindrical coordinates. The invariant mass of a dilepton system is never going to reconstruct well if the single particle invariant masses can even be reconstructed to a good degree of accuracy. The above problem is seen in the plot of single particle invariant mass squared below. 
-
-<img src = "">
+The main problem/thing affecting performance was the fact that most of the reconstructed particles we see that $|p| > E$ which we know to be unphysical, this appeared whether I tried cartesian or cylindrical coordinates. The invariant mass of a dilepton system is never going to reconstruct well if the single particle invariant masses can even be reconstructed to a good degree of accuracy. The above problem is seen in the plot of single particle invariant mass squared plot seen above.
 
 ## Conclusion
 
