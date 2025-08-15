@@ -1,6 +1,11 @@
 # Scaling scripts
 
+
+
+
 Readme to explain what scaling logic is applied in each of the scaling scripts. These scripts are questionably written so would be worth rewritting them.
+
+All of these can be used in 
 
 ## lorentz4vector.py
 
@@ -21,6 +26,8 @@ Fits a quantile transform to normal distribution on the whole of the momenta blo
 
 ## 50partquantreverse and 50partquartest
 
+(Reverse and the forward) transformations
+
 Scales 4 momenta to GeV from MeV.
 
 Convert to $(E, pt, eta, phi)$ notation.
@@ -32,5 +39,7 @@ Quantile scaling to normal distribution and save new
 $(E, pt, eta, phi)$ file.
 
 The reverse scaling version, saves both the untransformed $(E, pt, eta, phi)$ version and $(px, py, pz, E)$.
+
+The reverse transformation script requires the meta data and pickled data objects from the forward transformation script.
 
 

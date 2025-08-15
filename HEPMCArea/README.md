@@ -124,11 +124,11 @@ The best model was the BIGGER_AE with the following loss curve
 
 this gave the following invariant mass reconstruction.
 
-<img src = "">
+<img src = "Images/20ParticleInvariantMass.png">
 
 And an example of the reconstruction of a single distribution is shown here.
 
-<img src = "">
+<img src = "Images/20PartsOriginalDist.png">
 
 
 As we see individual quantities are reconstructed much better then the derived quantities.
@@ -150,6 +150,8 @@ Here the best model was the Transformer
 This gave the following loss curve. 
 
 <img src = "Images/TransformerLossCurveCartesian.png">
+
+Although the reconstruction was not too different from the one above.
 
 ### Cylindrical
 

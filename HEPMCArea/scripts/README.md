@@ -23,3 +23,5 @@ Contains dataclasses for configurables for the final state histrogram, ratio and
 
 File containing functions to calculate or get specific variables from the 4 momenta lists.
 
+Add things here for creating plots of any variables you want, always assumed that the [0] outer list is the reconstructed and the [1] outer list is the original.
+
