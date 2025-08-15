@@ -2,9 +2,7 @@ import numpy as np
 from sklearn.preprocessing import QuantileTransformer
 import os
 
-# --------------------------
-# Config
-# --------------------------
+
 UNTRANSFORM = True
 
 
@@ -17,9 +15,7 @@ UNTRANSFORMED_SAVE_FILE = "GlobaltransformAE.npz"
 
 print(os.getcwd())
 
-# --------------------------
-# Load data
-# --------------------------
+
 input_file_object = np.load(RAW_DATA_DIR + RAW_DATA_FILE_NAME)
 variable_names = input_file_object["names"]
 input_data = input_file_object["data"]  # shape: [N_samples, N_particles * N_features]
@@ -30,17 +26,13 @@ input_data /= 1000.0
 N_samples, total_features = input_data.shape
 print(f"Loaded: {N_samples} samples, {total_features // 4} particles, 4 features per particle")
 
-# --------------------------
-# Transform: Global Quantile Transformer
-# --------------------------
+
 qtf_global = QuantileTransformer(output_distribution="normal", random_state=42)
 transformed_data = qtf_global.fit_transform(input_data)
 
 print("Transformed data shape:", transformed_data.shape)
 np.savez(SAVE_DATA_FILE_TO_DIR + SAVE_DATA_FILE_TO_NAME, data = transformed_data, names = variable_names)
-# --------------------------
-# Untransform if needed
-# --------------------------
+
 if UNTRANSFORM:
     saved_obj = np.load(SAVE_DATA_FILE_TO_DIR + UNTRANSFORMED_DATA_FILE)
     transformed_data = saved_obj["data"]

@@ -60,6 +60,46 @@ Here we clearly see there is a differnece in the distributions when the final st
 
 Analysis in Rivet is slow, tedious and expects a user to be on system that can make sure of the toolset. It is also doesn't have a very detailed analysis script for the desired process (Drell-Yan).  So a [pyhepmc](https://scikit-hep.org/pyhepmc/) based analysis was setup.
 
-THis can be found in the  final_state_plots.ipynb notebook. 
+THis can be found in the  final_state_plots.ipynb notebook. The use of this notebook and the scripts it depends on are in [here](scripts/README.md).
+
+## Baler and 4 momenta compression.
+
+Next I moved onto looking at compressing 4 momenta blocks from the final state particles in Baler. All the code for how to get these files and how to evaluate the reconsturction quality are found [here](Notebooks/README.md). 
+
+
+### The data
+
+For compression to be both succesful and useful a large input dimension space is required, to achieve this I selected N particles from the final state particles, where the N's used where N = 20, 50 and 100.
+
+These correspond to dimension spaces of 80, 200, 400 respectively.
+
+To get these many particles the logic noted in [here](Notebooks/README.md) is used.
+
+The proprocessing of these blocks depends on experiment but the common ones were.
+
+* Standard scaler on px,py and quantile to normal on pz,E.
+* Quantile on all
+* Transforming into (E, pt, eta, phi) and then quantile scaling.
+
+
+Quantile scaling was used to ensure they are all distributed the same, although their are definately better methods to be used since this bounds the reconstruction only to values seen in the original data it is trained on.
+
+### Reconstructing (px, py, pz, E) blocks
+
+First I looked at compressing and reconstructing HEPMC's native 4 momenta coordinates, which is in cartesian. This was done in a variety of different preprocessing schemas and different models.
+
+What didn't work was:
+    Small models
+    Heavy regulisation techniques (in DNN's)
+    Min max scaling
+
+The fact that heavy regulursation techniques such as dropout and batchnorm is not suprising given the fact that we are basically trying to overfit the data.
+
+Two main models used were BIGGER_AE and TransformerAE_two, although others were experimented with but were either inconsistent or not as good.
+
+The BIGGER_AE consisted of a symmetric encoder/decoder, with each having 3 hidden layers of size (2048, 512, 256) with the latent size depending on training config. It has Leaky_relu between all layers except on the output layer, such that the output values weren't bounded.
+
+The TransformerAE_two consists of an symmetric encoder/decoder architecture, with the encoder having 3 hidden layers of size (512, 256, 128) and the decoder having 3 hidden layers of size (128, 256, 512) by default, along with a configurable latent dimension of 64. 
+
 
 

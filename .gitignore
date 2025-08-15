@@ -7,9 +7,11 @@ notebooks/*
 
 # Data/Random folders 
 /baler-enviro/
-/HEPMCArea/DATA/*
-/HEPMCArea/processedData/*
+/HEPMCArea/DATA/
+/HEPMCArea/processedData/
 /eos/
+/HEPMCArea/balercompressionexperiments/
+green_code_tracking.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
