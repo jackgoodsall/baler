@@ -101,5 +101,62 @@ The BIGGER_AE consisted of a symmetric encoder/decoder, with each having 3 hidde
 
 The TransformerAE_two consists of an symmetric encoder/decoder architecture, with the encoder having 3 hidden layers of size (512, 256, 128) and the decoder having 3 hidden layers of size (128, 256, 512) by default, along with a configurable latent dimension of 64. 
 
+## 20 Particle experiments
+
+First we tested with 20 particles (80 features) into a latent space fize of 50 (1.6 compression rate). 
+
+Trained mainly on the BIGGER_AE model.
+
+Small lr needed since large amount of data, (100,000 events) and (80 features). Common used was lr = 10e-4.
+
+Main preprocessing scheme was to convert from MeV -> GeV, then scale px and py's from standard scaling and py, E from quantile into normal distribution.
+
+
+## 50 Particle experiments
+Once we moved onto 50 particles we also decided to look at the cylindrical coordinates to see if this improved the reconstruction of the derived quanities.
+
+How these were obtained can also be found [here](scalingscripts/README.md).
+
+For this we also increased the compression rate, with a latent space size of 64, meaning a 3.125 compression rate.
+
+### Cartesian
+
+First we experimented with compression in cartesian coordiates.
+
+### Cylindrical
+
+This was like a 1/2 day thing so lacks a little rigour and maybe some issues in the way things were calculated.
+
+First I needed to change the proprocessing scheme since working with different distributions.
+
+First we scale to GeV for E and pt. We then $log(1+x)$ scale these distributions.
+
+We then apply quantile to normal to all distributions, this was used as a quick way to sort the fact that $\eta$ and $\phi$ were different distributions and could definately use some more R&D.
+
+The best model for this was the transformer model with the following loss curve. 
+
+<img src ="Images/TransformerLossCurve.png">
+
+
+The reconstruction quality can be seen here
+
+<img src="Images/CylindircalInvariantMass.png">
+
+Although still have poor single particle invariant mass reconstruction
+
+<img src = "Images/CylindricalSingleInvMass.png">
+
+
+
+
+## Main problems seen in reconstruction
+
+The main problem/thing affecting performance was the fact that most of the reconstructed particles we see that $|p| > E$ which we know to be unphysical, this appeared whether I tried cartesian or cylindrical coordinates. The invariant mass of a dilepton system is never going to reconstruct well if the single particle invariant masses can even be reconstructed to a good degree of accuracy. The above problem is seen in the plot of single particle invariant mass squared below. 
+
+<img src = "">
+
+## Conclusion
+
+In conclusion I did a sort of feasability study on the compression of HEPMC 4 momenta blocks. There is still a large way to go in area of getting even close to a good enough performance. Although whoever next looks at this work will have massive amounts more time then I had to actually look at the compression as most of the above spanned around 2 weeks of the 8 weeks of my work.
 
 
